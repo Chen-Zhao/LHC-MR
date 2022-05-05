@@ -155,13 +155,11 @@ mLL_model_process_f <- function(mLL_model_res_list,base="NULL"){
       LRT_m_vs_base = lr.test(x = x, y = y, df = 1)
       LRT_base_vs_m = lr.test(x = y, y = x, df = max(df1,1))
     }
-    LRT = lr.test(x = x, y = y, df = abs(df1))
-    res_pval_LRT = LRT$p.value
     AIC=2*(length(res_min)-1)-2*res_min$mLL
     LRT1_null = cbind(model = nm, t(res_min1),AIC,nPar=length(res_min)-1, pval_m_vs_base = LRT_m_vs_base$p.value,pval_base_vs_m=LRT_base_vs_m$p.value)
     LRT1_null
   })
   lrt_test <- rbind(parent_min2,Reduce("rbind",LRT_list))
   colnames(lrt_test)[grep("_base",colnames(lrt_test))]<- gsub("base",base,colnames(lrt_test)[grep("base",colnames(lrt_test))])
-  data.frame(model=unlist(lrt_test[,1]),apply(LRT_to_full[,-1],2,unlist))
+  data.frame(model=unlist(lrt_test[,1]),apply(lrt_test[,-1],2,unlist))
 }
