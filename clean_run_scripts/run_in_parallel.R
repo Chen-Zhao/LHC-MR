@@ -127,6 +127,7 @@ mLL_model_f <- function(model_name,running_dir,source_script_dir,mc.cores=12,max
   res_temp_null
 }
 
+
 mLL_model_process_f <- function(mLL_model_res_list,base="NULL"){
   param_full = rep(0,13) ##NA or 0
   names(param_full) = c("mLL","iX", "iY", "pX","pU","pY","h2X","h2Y","tX","tY","a","b","rho")
@@ -147,19 +148,22 @@ mLL_model_process_f <- function(mLL_model_res_list,base="NULL"){
     df1 = length(parent_min) - length(res_min) #get degrees of freedom
     if(df1<0){
       x=res_min$mLL; y = parent_min$mLL
-      LRT_m_vs_base = lr.test(x = x, y = y, df = -df1)
-      LRT_base_vs_m = lr.test(x = y, y = x, df = 1)
+      LRT_m_vs_base = lr.test(x = -x, y = -y, df = -df1)
+      LRT_base_vs_m = lr.test(x = -y, y = -x, df = 1)
     }else{
-      df_i = 1
       x=res_min$mLL; y = parent_min$mLL
-      LRT_m_vs_base = lr.test(x = x, y = y, df = 1)
-      LRT_base_vs_m = lr.test(x = y, y = x, df = max(df1,1))
+      LRT_m_vs_base = lr.test(x = -x, y = -y, df = 1)
+      LRT_base_vs_m = lr.test(x = -y, y = -x, df = max(df1,1))
     }
-    AIC=2*(length(res_min)-1)-2*res_min$mLL
+    AIC=2*(length(res_min)-1)+2*res_min$mLL
     LRT1_null = cbind(model = nm, t(res_min1),AIC,nPar=length(res_min)-1, pval_m_vs_base = LRT_m_vs_base$p.value,pval_base_vs_m=LRT_base_vs_m$p.value)
     LRT1_null
   })
   lrt_test <- rbind(parent_min2,Reduce("rbind",LRT_list))
   colnames(lrt_test)[grep("_base",colnames(lrt_test))]<- gsub("base",base,colnames(lrt_test)[grep("base",colnames(lrt_test))])
-  data.frame(model=unlist(lrt_test[,1]),apply(lrt_test[,-1],2,unlist))
+  lrt_test <- data.frame(model=unlist(lrt_test[,1]),apply(lrt_test[,-1],2,unlist))
+  lrt_test$mLL <- -1*lrt_test$mLL
+  lrt_test
 }
+
+
